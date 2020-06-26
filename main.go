@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/kontainer-engine-driver-digitalocean-master/drivers/eks"
+	"github.com/rancher/kontainer-engine/drivers/eks"
 	"github.com/rancher/kontainer-engine/types"
 	"github.com/sirupsen/logrus"
 )
