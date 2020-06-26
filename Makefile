@@ -1,23 +1,50 @@
-TARGETS := $(shell ls scripts)
+NAME:=kontainer-engine-driver-digitalocean
 
-.dapper:
-	@echo Downloading dapper
-	@curl -sL https://releases.rancher.com/dapper/latest/dapper-`uname -s`-`uname -m` > .dapper.tmp
-	@@chmod +x .dapper.tmp
-	@./.dapper.tmp -v
-	@mv .dapper.tmp .dapper
+# local build, use user and timestamp it
+BINARY_NAME ?= ${NAME}
+VERSION:=$(shell  date +%Y%m%d%H%M%S)
 
-$(TARGETS): .dapper
-	./.dapper $@
+DIST_DIR:=dist
+GO ?= go
 
-trash: .dapper
-	./.dapper -m bind trash
+.PHONY: build
+build: binary-build
 
-trash-keep: .dapper
-	./.dapper -m bind trash -k
+#
+# Go build related tasks
+#
+.PHONY: go-install
+go-install:
+	GO111MODULE=on $(GO) install .
 
-deps: trash
+.PHONY: go-run
+go-run: go-install
+	GO111MODULE=on $(GO) run .
 
-.DEFAULT_GOAL := ci
+.PHONY: go-fmt
+go-fmt:
+	gofmt -s -e -d $(shell find . -name "*.go" | grep -v /vendor/)
 
-.PHONY: $(TARGETS)
+.PHONY: go-vet
+go-vet:
+	echo $(GO) vet $(shell $(GO) list ./... | grep -v /vendor/)
+
+
+#
+# Docker-related tasks
+#
+.PHONY: binary-build
+binary-build:
+	mkdir -p ${DIST_DIR}
+	GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ${DIST_DIR}/${BINARY_NAME}-linux .
+	GO111MODULE=on GOOS=darwin GOARCH=amd64 go build -o ${DIST_DIR}/${BINARY_NAME}-darwin .
+
+#
+# Tests-related tasks
+#
+.PHONY: unit-test
+unit-test: go-install
+	go test -v ./digitalocean
+
+.PHONY: integ-test
+integ-test: go-install
