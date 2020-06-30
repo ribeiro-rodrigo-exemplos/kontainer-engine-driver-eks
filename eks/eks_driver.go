@@ -327,8 +327,8 @@ func getStateFromOptions(driverOptions *types.DriverOptions, isUpdate bool) (sta
 	state := state{}
 	state.ClusterName = options.GetValueFromDriverOptions(driverOptions, types.StringType, "name").(string)
 	state.DisplayName = options.GetValueFromDriverOptions(driverOptions, types.StringType, "display-name", "displayName").(string)
-	state.ClientID = options.GetValueFromDriverOptions(driverOptions, types.StringType, "client-id", "accessKey").(string)
-	state.ClientSecret = options.GetValueFromDriverOptions(driverOptions, types.StringType, "client-secret", "secretKey").(string)
+	state.ClientID = options.GetValueFromDriverOptions(driverOptions, types.StringType, "client-id", "accessKey", "access-key").(string)
+	state.ClientSecret = options.GetValueFromDriverOptions(driverOptions, types.StringType, "client-secret", "secretKey", "secret-key").(string)
 	state.SessionToken = options.GetValueFromDriverOptions(driverOptions, types.StringType, "session-token", "sessionToken").(string)
 	state.KubernetesVersion = options.GetValueFromDriverOptions(driverOptions, types.StringType, "kubernetes-version", "kubernetesVersion").(string)
 
@@ -1019,7 +1019,7 @@ func (d *Driver) Update(ctx context.Context, info *types.ClusterInfo, options *t
 		state.ClientSecret = newState.ClientSecret
 	}
 
-	if newState.DesiredASGSize > 0 {
+	if newState.DesiredASGSize > 0 && newState.DesiredASGSize != state.DesiredASGSize {
 		state.DesiredASGSize = newState.DesiredASGSize
 		errUpdateNodePool := d.updateNodePoolAndAwait(state, info)
 		if errUpdateNodePool != nil {
